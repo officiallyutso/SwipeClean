@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:swipeclean/screens/photo_swipe_screen.dart';
 import 'dart:typed_data';
 import 'dart:io';
 import '../services/photo_service.dart';
@@ -75,6 +76,77 @@ class _GalleryScreenState extends State<GalleryScreen> {
       // Refresh previews when returning from album view
       _loadAlbumPreviews();
     });
+  }
+
+  void _swipeAlbum(String albumName) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => PhotoSwipeScreen(
+          albumName: albumName, // Pass the album name
+        ),
+      ),
+    ).then((_) {
+      // Refresh previews when returning from swipe screen
+      _loadAlbumPreviews();
+    });
+  }
+
+  void _showAlbumOptions(String albumName) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => CupertinoActionSheet(
+        title: Text(
+          albumName,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        message: Text(
+          '${_albumCounts[albumName]} photos',
+          style: TextStyle(
+            fontSize: 14,
+            color: CupertinoColors.secondaryLabel,
+          ),
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(context);
+              _viewAlbum(albumName);
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(CupertinoIcons.photo_on_rectangle, color: CupertinoColors.systemBlue),
+                SizedBox(width: 8),
+                Text('View Album'),
+              ],
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(context);
+              _swipeAlbum(albumName);
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(CupertinoIcons.hand_draw, color: CupertinoColors.systemBlue),
+                SizedBox(width: 8),
+                Text('Swipe Album to Clean'),
+              ],
+            ),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(context),
+          isDefaultAction: true,
+          child: Text('Cancel'),
+        ),
+      ),
+    );
   }
 
   @override
@@ -164,7 +236,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     final hasMore = totalCount > _previewLimit;
     
     return GestureDetector(
-      onTap: () => _viewAlbum(albumName),
+      onTap: () => _showAlbumOptions(albumName), // Show options instead of direct navigation
       child: Container(
         margin: EdgeInsets.only(bottom: 24),
         decoration: BoxDecoration(
@@ -276,7 +348,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
             Padding(
               padding: EdgeInsets.only(top: 12),
               child: Text(
-                'Tap to view all photos',
+                'Tap to view options',
                 style: TextStyle(
                   fontSize: 14,
                   color: CupertinoColors.systemBlue,
@@ -397,7 +469,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Tap to view all ${_albumCounts[photos.first.toString().split('/').last] ?? 'photos'}',
+                'Tap to view options',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -440,6 +512,8 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
   }
 }
+
+// Keep the existing AlbumViewScreen and PhotoViewScreen classes unchanged...
 
 // New Album View Screen
 class AlbumViewScreen extends StatefulWidget {

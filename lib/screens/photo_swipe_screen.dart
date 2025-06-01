@@ -5,6 +5,13 @@ import '../services/photo_service.dart';
 import '../widgets/swipeable_card.dart';
 
 class PhotoSwipeScreen extends StatefulWidget {
+  final String? albumName; // Optional album name parameter
+  
+  const PhotoSwipeScreen({
+    Key? key,
+    this.albumName, // If null, shows all photos
+  }) : super(key: key);
+
   @override
   _PhotoSwipeScreenState createState() => _PhotoSwipeScreenState();
 }
@@ -64,7 +71,16 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
 
   Future<void> _loadPhotos() async {
     try {
-      final photos = await _photoService.getAllPhotos();
+      List<AssetEntity> photos;
+      
+      if (widget.albumName != null) {
+        // Load photos from specific album
+        photos = await _loadAlbumPhotos(widget.albumName!);
+      } else {
+        // Load all photos
+        photos = await _photoService.getAllPhotos();
+      }
+      
       final trashedIds = await _photoService.getTrashedPhotoIds();
       
       setState(() {
@@ -79,6 +95,21 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
       });
       _showErrorSnackBar('Error loading photos: $e');
     }
+  }
+
+  Future<List<AssetEntity>> _loadAlbumPhotos(String albumName) async {
+    final albums = await PhotoManager.getAssetPathList(
+      type: RequestType.image,
+      onlyAll: false,
+    );
+    
+    final album = albums.firstWhere(
+      (album) => album.name == albumName,
+      orElse: () => throw Exception('Album not found: $albumName'),
+    );
+    
+    final assetCount = await album.assetCountAsync;
+    return await album.getAssetListRange(start: 0, end: assetCount);
   }
 
   void _updateProgress() {
@@ -183,6 +214,7 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
   }
 
   void _showCompletionDialog() {
+    final isAlbumMode = widget.albumName != null;
     showCupertinoDialog(
       context: context,
       barrierDismissible: false,
@@ -193,7 +225,7 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
               Text('🎉', style: TextStyle(fontSize: 32)),
               SizedBox(height: 8),
               Text(
-                'All Done!',
+                isAlbumMode ? 'Album Complete!' : 'All Done!',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -208,7 +240,9 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
           child: Column(
             children: [
               Text(
-                'You\'ve reviewed all your photos!',
+                isAlbumMode 
+                    ? 'You\'ve reviewed all photos in "${widget.albumName}"!'
+                    : 'You\'ve reviewed all your photos!',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 24),
@@ -330,6 +364,9 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isAlbumMode = widget.albumName != null;
+    final screenTitle = isAlbumMode ? widget.albumName! : 'SwipeClean';
+    
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.grey[50],
@@ -350,7 +387,6 @@ class _PhotoSwipeScreenState extends State<PhotoSwipeScreen>
         ),
       );
     }
-
 
     if (_photos.isEmpty) {
       return Scaffold(
