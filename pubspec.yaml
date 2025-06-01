@@ -9,7 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  photo_manager: ^2.8.0
+  photo_manager: ^3.0.0
+  cupertino_icons: ^1.0.6
   permission_handler: ^11.0.1
   shared_preferences: ^2.2.2
   path_provider: ^2.1.1

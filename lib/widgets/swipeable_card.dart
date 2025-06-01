@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'dart:math' as math;
 
+// Add this import
+import 'full_screen_photo_viewer.dart';
+
 class SwipeableCard extends StatefulWidget {
   final AssetEntity photo;
   final VoidCallback onSwipeLeft;
@@ -223,19 +226,32 @@ class _SwipeableCardState extends State<SwipeableCard>
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          FutureBuilder<Widget>(
-                            future: _buildPhotoWidget(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return snapshot.data!;
+                          // ADD TAP DETECTION HERE
+                          GestureDetector(
+                            onTap: () {
+                              if (!_isDragging && _dragOffset.dx.abs() < 10) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FullScreenPhotoViewer(photo: widget.photo),
+                                  ),
+                                );
                               }
-                              return Container(
-                                color: Colors.grey[300],
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
                             },
+                            child: FutureBuilder<Widget>(
+                              future: _buildPhotoWidget(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return snapshot.data!;
+                                }
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           // Overlay for swipe feedback
                           if (_isDragging && (_dragOffset.dx.abs() > 50))
@@ -352,13 +368,25 @@ class _SwipeableCardState extends State<SwipeableCard>
     );
   }
 
+  
   Future<String> _getPhotoInfo() async {
     try {
       final dateTime = widget.photo.createDateTime;
-      final sizeInBytes = await widget.photo.sizeAsync;
-      final sizeInMB = (sizeInBytes / (1024 * 1024)).toStringAsFixed(1);
       
-      return '${_formatDate(dateTime)} • ${sizeInMB}MB • ${widget.photo.width}x${widget.photo.height}';
+      // Get file size by loading the file
+      String sizeText = '';
+      try {
+        final file = await widget.photo.file;
+        if (file != null && await file.exists()) {
+          final sizeInBytes = await file.length();
+          final sizeInMB = (sizeInBytes / (1024 * 1024)).toStringAsFixed(1);
+          sizeText = '${sizeInMB}MB';
+        }
+      } catch (e) {
+        sizeText = 'Size unavailable';
+      }
+      
+      return '${_formatDate(dateTime)} • $sizeText • ${widget.photo.width}x${widget.photo.height}';
     } catch (e) {
       return 'Photo information unavailable';
     }
