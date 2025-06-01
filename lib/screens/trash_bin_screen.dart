@@ -242,7 +242,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
           children: [
             CupertinoActivityIndicator(radius: 12),
             SizedBox(height: 16),
-            Text(message, style: TextStyle(fontSize: 16)),
+            Text(message, style: TextStyle(fontSize: 16, decoration: TextDecoration.none)),
           ],
         ),
       ),
@@ -259,10 +259,10 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
           children: [
             CupertinoActivityIndicator(radius: 12),
             SizedBox(height: 16),
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, decoration: TextDecoration.none)),
             if (subtitle != null) ...[
               SizedBox(height: 8),
-              Text(subtitle, style: TextStyle(fontSize: 14, color: CupertinoColors.secondaryLabel)),
+              Text(subtitle, style: TextStyle(fontSize: 14, color: CupertinoColors.secondaryLabel, decoration: TextDecoration.none)),
             ],
           ],
         ),
@@ -287,7 +287,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
               single
                   ? 'This photo will be permanently deleted and cannot be recovered.'
                   : 'These photos will be permanently deleted and cannot be recovered.',
-              style: TextStyle(fontSize: 14),
+              style: TextStyle(fontSize: 14, decoration: TextDecoration.none),
             ),
             if (sizeToFree > 0) ...[
               SizedBox(height: 12),
@@ -308,6 +308,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: CupertinoColors.systemGreen,
+                        decoration: TextDecoration.none
                       ),
                     ),
                   ],
@@ -326,6 +327,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                 style: TextStyle(
                   fontSize: 12,
                   color: CupertinoColors.secondaryLabel,
+                  decoration: TextDecoration.none
                 ),
               ),
             ),
@@ -458,6 +460,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
           style: TextStyle(
             color: CupertinoColors.black,
             fontWeight: FontWeight.w600,
+            decoration: TextDecoration.none
           ),
         ),
         leading: _isSelectionMode
@@ -512,6 +515,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                       style: TextStyle(
                         color: CupertinoColors.secondaryLabel,
                         fontSize: 16,
+                        decoration: TextDecoration.none
                       ),
                     ),
                   ],
@@ -579,6 +583,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: CupertinoColors.label,
+                        decoration: TextDecoration.none
                       ),
                     ),
                     SizedBox(height: 2),
@@ -592,6 +597,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                             style: TextStyle(
                               fontSize: 14,
                               color: CupertinoColors.secondaryLabel,
+                              decoration: TextDecoration.none
                             ),
                           ),
                         ],
@@ -609,6 +615,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                           fontWeight: _isSelectionMode 
                               ? FontWeight.w600 
                               : FontWeight.normal,
+                          decoration: TextDecoration.none
                         ),
                       ),
                   ],
@@ -639,6 +646,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                         fontSize: 13,
                         color: CupertinoColors.systemGreen,
                         fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.none
                       ),
                     ),
                   ),
@@ -676,6 +684,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
               fontSize: 24,
               fontWeight: FontWeight.w600,
               color: CupertinoColors.label,
+              decoration: TextDecoration.none
             ),
           ),
           SizedBox(height: 8),
@@ -684,6 +693,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
             style: TextStyle(
               fontSize: 16,
               color: CupertinoColors.secondaryLabel,
+              decoration: TextDecoration.none
             ),
           ),
           SizedBox(height: 32),
@@ -698,6 +708,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
               style: TextStyle(
                 fontSize: 14,
                 color: CupertinoColors.secondaryLabel,
+                decoration: TextDecoration.none
               ),
             ),
           ),
@@ -849,6 +860,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
                                 fontSize: 10,
                                 color: CupertinoColors.white,
                                 fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.none
                               ),
                             ),
                           ),
@@ -911,7 +923,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
       builder: (context) => CupertinoActionSheet(
         title: Text(
           'Trash Options',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, decoration: TextDecoration.none),
         ),
         message: Text(
           _totalTrashSize > 0 
@@ -976,7 +988,7 @@ class _TrashBinScreenState extends State<TrashBinScreen> with TickerProviderStat
               children: [
                 Icon(CupertinoIcons.refresh_circled, color: CupertinoColors.systemGreen, size: 20),
                 SizedBox(width: 8),
-                Text('Restore Photo', style: TextStyle(color: CupertinoColors.systemGreen)),
+                Text('Restore Photo', style: TextStyle(color: CupertinoColors.systemGreen, decoration: TextDecoration.none)),
               ],
             ),
           ),

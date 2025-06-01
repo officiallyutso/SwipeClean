@@ -59,7 +59,7 @@ class PhotoService {
 
   Future<void> moveToTrash(AssetEntity photo) async {
     final prefs = await SharedPreferences.getInstance();
-    final trashedIds = prefs.getStringList(_trashedPhotosKey) ?? [];
+    final trashedIds = await _getTrashedPhotoIdsSafe();
     
     if (!trashedIds.contains(photo.id)) {
       trashedIds.add(photo.id);
@@ -69,15 +69,52 @@ class PhotoService {
 
   Future<void> restoreFromTrash(AssetEntity photo) async {
     final prefs = await SharedPreferences.getInstance();
-    final trashedIds = prefs.getStringList(_trashedPhotosKey) ?? [];
+    final trashedIds = await _getTrashedPhotoIdsSafe();
     
     trashedIds.remove(photo.id);
     await prefs.setStringList(_trashedPhotosKey, trashedIds);
   }
 
-  Future<List<String>> getTrashedPhotoIds() async {
+  // FIXED: Safe method to get trashed photo IDs with proper type checking
+  Future<List<String>> _getTrashedPhotoIdsSafe() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_trashedPhotosKey) ?? [];
+    
+    try {
+      // First, check what type of data is actually stored
+      final storedValue = prefs.get(_trashedPhotosKey);
+      
+      if (storedValue == null) {
+        return [];
+      }
+      
+      // If it's already a List<String>, return it
+      if (storedValue is List<String>) {
+        return storedValue;
+      }
+      
+      // If it's a List but not List<String>, try to convert
+      if (storedValue is List) {
+        final stringList = storedValue.map((e) => e.toString()).toList();
+        // Save the corrected format back to preferences
+        await prefs.setStringList(_trashedPhotosKey, stringList);
+        return stringList;
+      }
+      
+      // If it's some other type, clear it and return empty list
+      print('Warning: Found unexpected type ${storedValue.runtimeType} for $_trashedPhotosKey. Clearing...');
+      await prefs.remove(_trashedPhotosKey);
+      return [];
+      
+    } catch (e) {
+      print('Error reading trashed photos from preferences: $e');
+      // Clear the corrupted data and return empty list
+      await prefs.remove(_trashedPhotosKey);
+      return [];
+    }
+  }
+
+  Future<List<String>> getTrashedPhotoIds() async {
+    return await _getTrashedPhotoIdsSafe();
   }
 
   Future<List<AssetEntity>> getTrashedPhotos() async {
@@ -229,5 +266,12 @@ class PhotoService {
     
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_trashedPhotosKey, validIds);
+  }
+
+  // ADDED: Method to reset corrupted preferences data
+  Future<void> resetTrashedPhotosData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_trashedPhotosKey);
+    print('Trashed photos data has been reset');
   }
 }
