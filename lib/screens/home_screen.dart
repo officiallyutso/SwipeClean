@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'photo_swipe_screen.dart';
 import 'trash_bin_screen.dart';
+import 'gallery_screen.dart'; // Import the new gallery screen
 import '../services/photo_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,9 +12,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final PhotoService _photoService = PhotoService();
-  int _totalPhotos = 0;
   int _trashedPhotos = 0;
-  double _totalPhotosSize = 0.0; // in bytes
   double _trashedPhotosSize = 0.0; // in bytes
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -45,17 +44,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _loadStats() async {
-    final photos = await _photoService.getAllPhotos();
     final trashed = await _photoService.getTrashedPhotos();
     
-    // Calculate total size of all photos and trashed photos
-    final totalSize = await _photoService.getTotalPhotosSize(photos);
+    // Calculate total size of trashed photos only
     final trashedSize = await _photoService.getTotalPhotosSize(trashed);
     
     setState(() {
-      _totalPhotos = photos.length;
       _trashedPhotos = trashed.length;
-      _totalPhotosSize = totalSize;
       _trashedPhotosSize = trashedSize;
     });
   }
@@ -79,14 +74,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       navigationBar: CupertinoNavigationBar(
         backgroundColor: CupertinoColors.systemBackground.withOpacity(0.9),
         border: Border(),
-        middle: Text(
-          'SwipeClean',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: CupertinoColors.label,
-          ),
-        ),
+        // Remove the middle title
       ),
       child: SafeArea(
         child: FadeTransition(
@@ -100,12 +88,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   padding: EdgeInsets.all(20),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // Welcome Section
-                      _buildWelcomeSection(),
+                      // App Title Section
+                      _buildAppTitleSection(),
                       SizedBox(height: 24),
                       
-                      // Stats Section
-                      _buildStatsSection(),
+                      // Welcome Section
+                      _buildWelcomeSection(),
                       SizedBox(height: 32),
                       
                       // Action Buttons
@@ -118,6 +106,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           context,
                           CupertinoPageRoute(builder: (context) => PhotoSwipeScreen()),
                         ).then((_) => _loadStats()),
+                      ),
+                      SizedBox(height: 16),
+
+                      _buildActionButton(
+                        'Photo Library',
+                        'Browse all photos organized by albums',
+                        CupertinoIcons.photo_fill_on_rectangle_fill,
+                        CupertinoColors.systemBlue,
+                        () => Navigator.push(
+                          context,
+                          CupertinoPageRoute(builder: (context) => GalleryScreen()),
+                        ),
                       ),
                       SizedBox(height: 16),
                       
@@ -143,6 +143,59 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAppTitleSection() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              colors: [
+                CupertinoColors.systemBlue,
+                CupertinoColors.systemPurple,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds),
+            child: Center(
+  child: Text(
+    'SwipeClean',
+    style: TextStyle(
+      fontSize: 46,
+      fontWeight: FontWeight.w900,
+      color: CupertinoColors.white,
+      decoration: TextDecoration.none,
+      letterSpacing: -1.0,
+      shadows: [
+        Shadow(
+          offset: Offset(0.5, 0.5),
+          blurRadius: 0.8,
+          color: CupertinoColors.white.withOpacity(0.6),
+        ),
+      ],
+    ),
+  ),
+),
+
+          ),
+          SizedBox(height: 4),
+          Center(
+            child: Text(
+              'Swipe left to Clean!',
+              style: TextStyle(
+                fontSize: 16,
+                color: CupertinoColors.secondaryLabel,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -204,110 +257,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsSection() {
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Photo Library',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: CupertinoColors.label,
-              decoration: TextDecoration.none,
-            ),
-          ),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Total Photos',
-                  _totalPhotos,
-                  _formatFileSize(_totalPhotosSize),
-                  CupertinoIcons.photo,
-                  CupertinoColors.systemBlue,
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCard(
-                  'In Trash',
-                  _trashedPhotos,
-                  _formatFileSize(_trashedPhotosSize),
-                  CupertinoIcons.trash,
-                  CupertinoColors.systemRed,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, int count, String size, IconData icon, Color color) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.1),
-          width: 0.5,
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          SizedBox(height: 8),
-          Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: color,
-              decoration: TextDecoration.none,
-            ),
-          ),
-          SizedBox(height: 2),
-          Text(
-            size,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color.withOpacity(0.8),
-              decoration: TextDecoration.none,
-            ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: CupertinoColors.secondaryLabel,
-              decoration: TextDecoration.none,
-            ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
